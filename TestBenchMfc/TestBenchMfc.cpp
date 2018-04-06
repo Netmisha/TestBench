@@ -5,6 +5,7 @@
 #include "stdafx.h"
 #include "TestBenchMfc.h"
 #include "TestBenchMfcDlg.h"
+#include "ErrorCascadeCh.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -110,9 +111,22 @@ INT CTestBenchMfcApp::ExitInstance()
     return CWinApp::ExitInstance();
 }
 
-
-
 void CTestBenchMfcApp::OnFileExit()
 {
+    /*CErrorCh** arr = new CErrorCh*[3];
+    for (int i = 0; i < 3; ++i)
+    {
+        arr[i] = new CErrorCh;
+        arr[i]->Create(CErrorCh::IDD);
+        arr[i]->ShowWindow(SW_SHOW);
+    }
+
+    for (int i = 0; i < 3; ++i)
+    {
+        arr[i]->DoModal();
+    }*/
+    // TODO: Add your command handler code here
+    CErrorCh error;
+    error.DoModal();
     exit(ExitInstance());
 }

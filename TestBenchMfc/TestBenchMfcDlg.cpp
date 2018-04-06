@@ -74,6 +74,7 @@ ON_COMMAND(ID_NEVERSEENBEFORE_KEK, &CTestBenchMfcDlg::OnNeverseenbeforeKek)
 ON_BN_CLICKED(IDOK, &CTestBenchMfcDlg::OnBnClickedOk)
 ON_BN_DOUBLECLICKED(IDOK, &CTestBenchMfcDlg::OnBnDoubleclickedOk)
 ON_COMMAND(ID_EDIT_CLEANALL, &CTestBenchMfcDlg::OnEditCleanall)
+ON_BN_CLICKED(IDC_SORT_VERTICES, &CTestBenchMfcDlg::OnBnClickedSortVertices)
 END_MESSAGE_MAP()
 
 
@@ -151,8 +152,6 @@ void CTestBenchMfcDlg::OnPaint()
 
 		// Draw the icon
 		dc.DrawIcon(x, y, m_hIcon);
-
-
 	}
 	else
 	{
@@ -197,17 +196,24 @@ void CTestBenchMfcDlg::OnNeverseenbeforeKek()
         }
         pGroup->UpdateData(FALSE);
     }
+    CWnd* pBox = GetDlgItem(IDC_SORT_VERTICES);
+    if (pBox)
+    {
+        pBox->ShowWindow(pBox->IsWindowVisible() ? SW_HIDE : SW_SHOW);
+        pBox->UpdateData(FALSE);
+    }
     CWnd* pButton = GetDlgItem(IDC_POINT_EDIT_D);
     if (pButton) 
     {
         pButton->ShowWindow(pButton->IsWindowVisible() ? SW_HIDE : SW_SHOW);
         pButton->UpdateData(FALSE);
     }
+    
 }
 
 void CTestBenchMfcDlg::OnBnClickedOk()
 {
-    WCHAR* textChangeValue[] = { L"OK", L"OO", L"KO"};
+    WCHAR* textChangeValue[] = { L"OK", L"KO"};
     static INT currentButtonText = 0;
 
     GetDlgItem(IDOK)->SetWindowTextW(textChangeValue[currentButtonText++]);
@@ -234,4 +240,11 @@ void CTestBenchMfcDlg::OnEditCleanall()
     {
         GetDlgItem(items[i])->SetWindowTextW(L"");
     }
+}
+
+
+void CTestBenchMfcDlg::OnBnClickedSortVertices()
+{
+    triangle.SortVertices();
+    triangle.DrawTriangle();
 }

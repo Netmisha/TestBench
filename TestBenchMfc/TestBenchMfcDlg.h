@@ -41,4 +41,5 @@ public:
     afx_msg void OnBnClickedOk();
     afx_msg void OnBnDoubleclickedOk();
     afx_msg void OnEditCleanall();
+    afx_msg void OnBnClickedSortVertices();
 };

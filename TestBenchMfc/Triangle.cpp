@@ -12,7 +12,8 @@ using Regex = std::basic_regex<WCHAR>;
 using StringStream = std::wstringstream;
 
 Triangle::Triangle():
-    isInitialized(false)
+    isInitialized(false),
+    sortVertices(false)
 {}
 void Triangle::InitTriangle(CWnd* parentWindow, INT idPicture, INT idEditPointA, INT idEditPointB, INT idEditPointC, INT idEditPointD)
 {
@@ -98,6 +99,7 @@ void Triangle::DrawTriangle()
 
     CPoint c(std::accumulate(points, points + 4, 0, [](int& val, CPoint& p) {return val+p.x;}) / 4, 
              std::accumulate(points, points + 4, 0, [](int& val, CPoint& p) {return val+p.y;}) / 4);
+    if (sortVertices)
     std::sort(points, points + 4, [&](CPoint& a, CPoint&b)
     {
         if (!cmpX(a,c) && cmpX(b,c))
@@ -129,6 +131,11 @@ void Triangle::DrawTriangle()
 bool Triangle::IsInitialized()
 {
     return isInitialized;
+}
+
+void Triangle::SortVertices()
+{
+    sortVertices ^= true;
 }
 
 CPoint Triangle::CStringToCPoint(const CString& str)
