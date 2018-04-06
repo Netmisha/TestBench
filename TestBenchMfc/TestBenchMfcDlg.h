@@ -3,7 +3,7 @@
 //
 
 #pragma once
-
+#include "Triangle.h"
 
 // CTestBenchMfcDlg dialog
 class CTestBenchMfcDlg : public CDialogEx
@@ -24,6 +24,7 @@ public:
 // Implementation
 protected:
 	HICON m_hIcon;
+    Triangle triangle;
 
 	// Generated message map functions
 	virtual BOOL OnInitDialog();

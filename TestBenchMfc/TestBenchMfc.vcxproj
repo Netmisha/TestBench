@@ -202,6 +202,7 @@
     <ClInclude Include="targetver.h" />
     <ClInclude Include="TestBenchMfc.h" />
     <ClInclude Include="TestBenchMfcDlg.h" />
+    <ClInclude Include="Triangle.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -212,6 +213,7 @@
     </ClCompile>
     <ClCompile Include="TestBenchMfc.cpp" />
     <ClCompile Include="TestBenchMfcDlg.cpp" />
+    <ClCompile Include="Triangle.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="TestBenchMfc.rc" />
@@ -220,6 +222,7 @@
     <None Include="res\TestBenchMfc.rc2" />
   </ItemGroup>
   <ItemGroup>
+    <Image Include="res\icon1.ico" />
     <Image Include="res\TestBenchMfc.ico" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

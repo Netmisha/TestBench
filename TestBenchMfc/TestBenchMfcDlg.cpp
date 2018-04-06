@@ -7,14 +7,9 @@
 #include "TestBenchMfcDlg.h"
 #include "afxdialogex.h"
 
-#include <regex>
-#include <string>
-#include <sstream>
-
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
-
 
 // CAboutDlg dialog used for App About
 
@@ -113,7 +108,10 @@ BOOL CTestBenchMfcDlg::OnInitDialog()
 	SetIcon(m_hIcon, TRUE);			// Set big icon
 	SetIcon(m_hIcon, FALSE);		// Set small icon
 
-	// TODO: Add extra initialization here
+    /*InitializeTriangle*/
+    {
+        triangle.InitTriangle(this, IDC_PICTURE, IDC_POINT_EDIT_A, IDC_POINT_EDIT_B, IDC_POINT_EDIT_C, IDC_POINT_EDIT_D);
+    }
 
 	return TRUE;  // return TRUE  unless you set the focus to a control
 }
@@ -154,14 +152,18 @@ void CTestBenchMfcDlg::OnPaint()
 		// Draw the icon
 		dc.DrawIcon(x, y, m_hIcon);
 
-        {
 
-        }
 	}
 	else
 	{
 		CDialogEx::OnPaint();
 	}
+
+    /*DrawTriangleIfInitialized*/
+    {
+        if (triangle.IsInitialized())
+            triangle.DrawTriangle();
+    }
 }
 
 // The system calls this function to obtain the cursor to display while the user drags
@@ -203,31 +205,6 @@ void CTestBenchMfcDlg::OnNeverseenbeforeKek()
     }
 }
 
-
-using String = std::basic_string<WCHAR>;
-using Regex = std::basic_regex<WCHAR>;
-using StringStream = std::wstringstream;
-
-CPoint WcharToPoint(CString& str)
-{
-    CPoint cp;
-
-    String input = std::regex_replace(str.GetString(), Regex(L"[^ 0-9]"), L" ");
-    if (std::regex_match(input, Regex(L"[ ]*[0-9]+[ ]+[0-9]+[ ]*")))
-    {
-        StringStream ss(input);
-        ss >> cp.x >> cp.y;
-    }
-    else
-    {
-        INT* ptr = reinterpret_cast<INT*>(&str);
-        cp.x = ptr[0];
-        cp.y = ptr[1];
-    }
-
-    return cp;
-}
-
 void CTestBenchMfcDlg::OnBnClickedOk()
 {
     WCHAR* textChangeValue[] = { L"OK", L"OO", L"KO"};
@@ -236,40 +213,8 @@ void CTestBenchMfcDlg::OnBnClickedOk()
     GetDlgItem(IDOK)->SetWindowTextW(textChangeValue[currentButtonText++]);
     currentButtonText %= sizeof(textChangeValue) / sizeof(WCHAR*);
 
-    {
-        CWnd* pImage = GetDlgItem(IDC_PICTURE);
-        pImage->RedrawWindow();
-
-        INT polySize = GetDlgItem(IDC_POINT_GROUP_D)->IsWindowVisible() ? 4 : 3;
-
-        INT items[] = 
-        {
-            IDC_POINT_EDIT_A,
-            IDC_POINT_EDIT_B,
-            IDC_POINT_EDIT_C,
-            IDC_POINT_EDIT_D
-        };
-        CPoint itemVals[4]{};
-        CString rat;
-        for (int i = 0; i < polySize; ++i)
-        {
-            CString str;
-            GetDlgItem(items[i])->GetWindowTextW(str);
-            itemVals[i] = WcharToPoint(str);
-            rat += str;
-        }
-
-        {
-            CPen pen(PS_SOLID, 1, RGB(0xff, 0, 0));
-            CBrush bruh(PS_SOLID, RGB(0, 0xff, 0));
-
-            CDC* dcPic = pImage->GetDC();
-            dcPic->SelectObject(&pen);
-            dcPic->SelectObject(&bruh);
-            dcPic->Polygon(itemVals, polySize);
-            pImage->ReleaseDC(dcPic);
-        }
-    }
+    triangle.UpdateTriangle();
+    triangle.DrawTriangle();
 }
 
 
