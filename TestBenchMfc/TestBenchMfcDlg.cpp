@@ -174,13 +174,11 @@ HCURSOR CTestBenchMfcDlg::OnQueryDragIcon()
 
 void CAboutDlg::OnHelpAbout()
 {}
-
 void CTestBenchMfcDlg::OnHelpAbout()
 {
     CAboutDlg about;
     about.DoModal();
 }
-
 void CTestBenchMfcDlg::OnNeverseenbeforeKek()
 {
     CWnd* pGroup = GetDlgItem(IDC_POINT_GROUP_D);

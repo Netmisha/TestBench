@@ -4,49 +4,90 @@
 #include <afximagepaintarea.h>
 
 #include "resource.h"
-class Cpg2App : 
+
+#define buttonId 11011
+
+class CMainApp : 
     public CWinApp
 {
 public:
     BOOL InitInstance();
     DECLARE_MESSAGE_MAP()
 };
-class Cpg2MainFrame : public CFrameWnd
+class CMainFrame : public CFrameWnd
 {
-public:
-    DECLARE_DYNCREATE(Cpg2MainFrame)
-    afx_msg INT OnCreate(LPCREATESTRUCT lpCreateStruct);
+    DECLARE_DYNCREATE(CMainFrame);
+    DECLARE_MESSAGE_MAP();
     afx_msg BOOL PreCreateWindow(CREATESTRUCT& cs);
-    DECLARE_MESSAGE_MAP()
-};
-class Cpg2Doc : public CDocument
-{
+    afx_msg INT  OnCreate(LPCREATESTRUCT lpCreateStruct);
+    afx_msg void OnButtonClickedKEK();
 public:
-    Cpg2Doc() 
+    enum CtrId
     {
-        points[0] = CPoint(20, 20); 
-        points[1] = CPoint(120, 45);
-        points[2] = points[3] = CPoint(350, 350);    
-    }
+        id_canvas 
+            = 101010,
+        id_panel,
+        id_edit_point,
+        id_button_ok 
+            = id_edit_point +3,
+        id_edit
+    };
 
-    DECLARE_DYNCREATE(Cpg2Doc)
-    DECLARE_MESSAGE_MAP()
-public:
-    CPoint points[4];
+    class CCanvas :
+        public CStatic
+    {
+        //DECLARE_MESSAGE_MAP();
+        //afx_msg void OnLButtonDown(UINT nFlags, CPoint p);
+    public:
+        enum { ID = id_canvas };
+        BOOL Create(CWnd* parent);
+        
+        CRect m_Rect;
+    };
+
+    class CPanel :
+        public CButton
+    {
+        DECLARE_MESSAGE_MAP();
+        afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
+    public:
+
+        enum { ID = id_panel };
+        BOOL Create(CWnd* parent);
+        BOOL RedrawWindow();
+
+        CRect m_Rect;
+
+        CEdit editPoints[3];
+        CButton buttOk;
+    };
+
+    CRect m_Rect;
+
+    CCanvas canvas;
+    CPanel  panel;
 };
-
-class Cpg2View : public CView
+class CTriangleDoc : public CDocument
 {
 public:
-    DECLARE_DYNCREATE(Cpg2View)
-    afx_msg void Cpg2View::OnDraw(_In_ CDC* pDC);
-    DECLARE_MESSAGE_MAP()
+    DECLARE_DYNCREATE(CTriangleDoc);
+    DECLARE_MESSAGE_MAP();
+    afx_msg BOOL OnNewDocument();
+public:
+    CPoint points[3];
+};
+
+class CMainView : public CView
+{
+public:
+    DECLARE_DYNCREATE(CMainView);
+    DECLARE_MESSAGE_MAP();
+    afx_msg void CMainView::OnDraw(CDC* pDC);
 };
 
 class CChildFrame : public CMDIChildWnd
 {
 public:
-    DECLARE_DYNCREATE(CChildFrame)
-    afx_msg INT OnCreate(LPCREATESTRUCT lpCreateStruct);
-    DECLARE_MESSAGE_MAP()
+    DECLARE_DYNCREATE(CChildFrame);
+    DECLARE_MESSAGE_MAP();
 };
