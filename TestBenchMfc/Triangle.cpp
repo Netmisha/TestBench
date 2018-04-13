@@ -124,7 +124,7 @@ void Triangle::DrawTriangle()
     });
 
     dcPic->Polygon(points, 4);
-    dcPic->SetPixel(c, RGB(~0, 0, 0));
+    //dcPic->SetPixel(c, RGB(~0, 0, 0));
     pImage->ReleaseDC(dcPic);
 }
 

@@ -6,29 +6,6 @@ CErrorCh::CErrorCh():
     CDialogEx(CErrorCh::IDD)
 {}
 
-//INT Ec(LPVOID*)
-//{
-//    CErrorCh ec;
-//    ec.DoModal();
-//    return 0;
-//}
-//
-//class CEcThread :
-//    public CWinThread
-//{
-//public:
-//    BOOL InitInstance()
-//    {
-//        return TRUE;
-//    }
-//    INT Run()
-//    {
-//        CErrorCh ec;
-//        ec.DoModal();
-//        return 0;
-//    }
-//};
-
 int CErrorCh::OnCreate(LPCREATESTRUCT lpCreateStruct)
 {
     if (CDialog::OnCreate(lpCreateStruct) == -1)

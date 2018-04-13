@@ -4,8 +4,7 @@
 #include <afximagepaintarea.h>
 
 #include "resource.h"
-
-#define buttonId 11011
+#include <vector>
 
 class CMainApp : 
     public CWinApp
@@ -13,78 +12,84 @@ class CMainApp :
 public:
     BOOL InitInstance();
     DECLARE_MESSAGE_MAP()
+    afx_msg void OnFileExit();
+    afx_msg void OnHelpBasics();
+    afx_msg void OnHelpAbouttestbench();
 };
+
+enum CtrId
+{
+    id_canvas
+    = 101010,
+    id_panel,
+    id_edit_point,
+    id_button_ok
+    = id_edit_point + 3,
+    id_edit
+};
+
 class CMainFrame : public CFrameWnd
 {
     DECLARE_DYNCREATE(CMainFrame);
     DECLARE_MESSAGE_MAP();
-    afx_msg BOOL PreCreateWindow(CREATESTRUCT& cs);
-    afx_msg INT  OnCreate(LPCREATESTRUCT lpCreateStruct);
-    afx_msg void OnButtonClickedKEK();
 public:
-    enum CtrId
-    {
-        id_canvas 
-            = 101010,
-        id_panel,
-        id_edit_point,
-        id_button_ok 
-            = id_edit_point +3,
-        id_edit
-    };
-
     class CCanvas :
         public CStatic
     {
-        //DECLARE_MESSAGE_MAP();
-        //afx_msg void OnLButtonDown(UINT nFlags, CPoint p);
+        DECLARE_MESSAGE_MAP();
     public:
-        enum { ID = id_canvas };
+        afx_msg void OnLButtonDown(UINT nFlags, CPoint p);
         BOOL Create(CWnd* parent);
-        
-        CRect m_Rect;
-    };
+        BOOL RedrawWindow();
 
+        CRect  m_Rect;
+        CPen   m_Pen;
+        CBrush m_Brush;
+    };
     class CPanel :
         public CButton
     {
         DECLARE_MESSAGE_MAP();
-        afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
+        afx_msg int  OnCreate(LPCREATESTRUCT lpCreateStruct);
+        afx_msg void OnButtonClickOk();
     public:
-
         enum { ID = id_panel };
         BOOL Create(CWnd* parent);
         BOOL RedrawWindow();
 
         CRect m_Rect;
-
         CEdit editPoints[3];
         CButton buttOk;
     };
 
-    CRect m_Rect;
+    afx_msg BOOL PreCreateWindow(CREATESTRUCT& cs);
+    afx_msg INT  OnCreate(LPCREATESTRUCT lpCreateStruct);
+    afx_msg void OnLButtonDown(UINT nFlags, CPoint p);
 
-    CCanvas canvas;
-    CPanel  panel;
+    CRect   m_Rect;
+    CCanvas m_Canvas;
+    CPanel  m_Panel;
+    afx_msg void OnEditClear();
 };
-class CTriangleDoc : public CDocument
+class CMainDocument: 
+    public CDocument
 {
-public:
-    DECLARE_DYNCREATE(CTriangleDoc);
+    DECLARE_DYNCREATE(CMainDocument);
     DECLARE_MESSAGE_MAP();
+public:
     afx_msg BOOL OnNewDocument();
-public:
-    CPoint points[3];
+    std::vector<CPoint> m_Points;
+    //CPoint m_Points[3];
 };
-
-class CMainView : public CView
+class CMainView: 
+    public CView
 {
-public:
     DECLARE_DYNCREATE(CMainView);
     DECLARE_MESSAGE_MAP();
-    afx_msg void CMainView::OnDraw(CDC* pDC);
+public:
+    afx_msg void OnDraw(CDC* pDC);
+    afx_msg void OnLButtonDown(UINT nFlags, CPoint p);
 };
-
 class CChildFrame : public CMDIChildWnd
 {
 public:
