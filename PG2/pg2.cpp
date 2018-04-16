@@ -7,15 +7,9 @@
 #include <algorithm>
 #include <cmath>
 #include <numeric>
-#include <iterator>
-#include <typeinfo>
-#include <fstream>
-
 using String = std::basic_string<WCHAR>;
 using Regex = std::basic_regex<WCHAR>;
 using StringStream = std::wstringstream;
-using Ostream = std::ofstream;
-using Istream = std::ifstream;
 
 
 CPoint CStringToCPoint(const CString& str)
@@ -23,12 +17,10 @@ CPoint CStringToCPoint(const CString& str)
     CPoint cp;
 
     String input = std::regex_replace(str.GetString(), Regex(L"[^-0-9]"), L" ");
-    //if (std::regex_match(input, Regex(L"[ ]*[0-9]+[ ]+[0-9]+[ ]*")))
     {
         StringStream ss(input);
         ss >> cp.x >> cp.y;
     }
-    //else cp = { 0, 0 };
 
     return cp;
 }
@@ -412,66 +404,20 @@ CPoint CStringToCPoint(const CString& str)
 
     void CMainFrame::CPanel::OnButtonClickOk()
     {
-        //auto& frame = GetMainFrame();
-        //auto& doc   = GetMainDocument();
+        auto& frame = GetMainFrame();
+        auto& doc = GetMainDocument();
 
-        //CString strPoints[3];
-        //for (int i = 0; i < 3; ++i)
-        //{
-        //    m_EditPoints[i].GetWindowTextW(strPoints[i]);
-        //    if (strPoints[i].IsEmpty())
-        //        return;
-        //}
+        doc.UpdateData();
 
-        //doc.m_Points.clear();
-        //for (int i = 0; i < 3; ++i)
-        //{
-        //    doc.m_Points.push_back(CStringToCPoint(strPoints[i]));
-        //}
-
-        ////{
-        ////    if (doc.m_Points.size() == 3)
-        ////        doc.m_Points.clear();
-        ////    for (int i = 0; i < 3; ++i)
-        ////    {
-        ////        CPoint p = CStringToCPoint(strPoints[i]);
-        ////        doc.m_Points.insert(doc.m_Points.begin(), p);
-        ////    }
-
-        ////    auto cmpX = [](CPoint&a, CPoint&b) { return a.x < b.x; };
-        ////    auto cmpY = [](CPoint&a, CPoint&b) { return a.y < b.y; };
-
-        ////    CPoint c(std::accumulate(doc.m_Points.begin(), doc.m_Points.end(), 0, [](int& val, CPoint& p) {return val + p.x;}) / 4,
-        ////             std::accumulate(doc.m_Points.begin(), doc.m_Points.end(), 0, [](int& val, CPoint& p) {return val + p.y;}) / 4);
-
-        ////    std::sort(doc.m_Points.begin(), doc.m_Points.end(), [&](CPoint& a, CPoint&b)
-        ////    {
-        ////        if (!cmpX(a, c) && cmpX(b, c))
-        ////            return true;
-        ////        if (cmpX(a, c) && !cmpX(b, c))
-        ////            return false;
-        ////        if ((!cmpX(a, c) && !cmpX(c, a)) && (!cmpX(b, c) && !cmpX(c, b)))
-        ////            if (!cmpY(a, c) || !cmpY(b, c))
-        ////                return cmpY(b, a);
-        ////            else
-        ////                return cmpY(a, b);
-
-        ////        //auto det = (a.x - c.x) * (b.y - c.y) - (b.x - c.x) * (a.y - c.y);
-        ////        //if (det < 0)
-        ////        //    return true;
-        ////        //if (det > 0)
-        ////        //    return false;
-
-        ////        int d1 = (a.x - c.x) * (a.x - c.x) + (a.y - c.y) * (a.y - c.y);
-        ////        int d2 = (b.x - c.x) * (b.x - c.x) + (b.y - c.y) * (b.y - c.y);
-        ////        return d1 > d2;
-        ////    });
-        ////}
-
-        //frame.m_Canvas.RedrawWindow();
+        frame.m_Canvas.RedrawWindow();
     }
     void CMainFrame::CPanel::OnButtonClickCp()
-    {}
+    {
+        auto& frame = GetMainFrame();
+        auto cbState = frame.m_Panel.m_CheckPaint.GetState();
+
+        frame.m_Panel.m_ButtOk.EnableWindow(cbState&BST_CHECKED? FALSE:TRUE);
+    }
     void CMainFrame::CPanel::OnEditPointChanged()
     {
         auto& frame = GetMainFrame();

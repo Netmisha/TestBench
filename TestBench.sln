@@ -3,8 +3,6 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
 VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PlayGround", "PlayGround\PlayGround.vcxproj", "{33F93E9D-1B01-407E-970C-31D3E164B570}"
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TestBenchMfc", "TestBenchMfc\TestBenchMfc.vcxproj", "{7585DB1D-24C8-4F18-8A30-5C038882854E}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PG2", "PG2\PG2.vcxproj", "{F34BA7A8-2254-4F6D-969C-250ADD1AAE04}"
@@ -17,14 +15,6 @@ Global
 		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{33F93E9D-1B01-407E-970C-31D3E164B570}.Debug|x64.ActiveCfg = Debug|Win32
-		{33F93E9D-1B01-407E-970C-31D3E164B570}.Debug|x64.Build.0 = Debug|Win32
-		{33F93E9D-1B01-407E-970C-31D3E164B570}.Debug|x86.ActiveCfg = Debug|Win32
-		{33F93E9D-1B01-407E-970C-31D3E164B570}.Debug|x86.Build.0 = Debug|Win32
-		{33F93E9D-1B01-407E-970C-31D3E164B570}.Release|x64.ActiveCfg = Release|Win32
-		{33F93E9D-1B01-407E-970C-31D3E164B570}.Release|x64.Build.0 = Release|Win32
-		{33F93E9D-1B01-407E-970C-31D3E164B570}.Release|x86.ActiveCfg = Release|Win32
-		{33F93E9D-1B01-407E-970C-31D3E164B570}.Release|x86.Build.0 = Release|Win32
 		{7585DB1D-24C8-4F18-8A30-5C038882854E}.Debug|x64.ActiveCfg = Debug|Win32
 		{7585DB1D-24C8-4F18-8A30-5C038882854E}.Debug|x64.Build.0 = Debug|Win32
 		{7585DB1D-24C8-4F18-8A30-5C038882854E}.Debug|x86.ActiveCfg = Debug|Win32
