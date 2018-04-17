@@ -59,12 +59,18 @@ public:
         afx_msg void OnEditPointChanged();
     public:
         enum { ID = id_panel };
+        class CCheckBox :
+            public CButton
+        {
+        public:
+            BOOL RedrawWindow();
+        };
         BOOL Create(CWnd* parent);
         BOOL RedrawWindow();
 
         CRect m_Rect;
         CEdit m_EditPoints[3];
-        CButton m_CheckPaint;
+        CCheckBox m_CheckPaint;
         CButton m_ButtOk;
     };
 
@@ -100,6 +106,10 @@ class CMainView:
 public:
     afx_msg void OnDraw(CDC* pDC);
     afx_msg void OnLButtonDown(UINT nFlags, CPoint p);
+    afx_msg void OnMouseMove(UINT nFlags, CPoint p);
+    afx_msg void OnMouseHover(UINT nFlags, CPoint p);
+    afx_msg void OnMouseLeave();
+
 };
 class CChildFrame : public CMDIChildWnd
 {

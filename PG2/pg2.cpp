@@ -90,17 +90,18 @@ CPoint CStringToCPoint(const CString& str)
         }
 
         doc.DoFileOpen();
-        for (int i = 0; i < doc.m_Points.size(); ++i)
-        {
-            CPoint p = doc.m_Points[i];
-            CString pointStr;
-            {
-                pointStr.Format(L"( %d,  %d )", p.x, p.y);
-            }
-            frame.m_Panel.m_EditPoints[i].SetWindowText(pointStr);
-        }
+        //for (int i = 0; i < doc.m_Points.size(); ++i)
+        //{
+        //    CPoint p = doc.m_Points[i];
+        //    CString pointStr;
+        //    {
+        //        pointStr.Format(L"( %d,  %d )", p.x, p.y);
+        //    }
+        //    frame.m_Panel.m_EditPoints[i].SetWindowText(pointStr);
+        //}
 
         frame.m_Canvas.RedrawWindow();
+        frame.m_Panel.RedrawWindow();
     }
 
     void CMainApp::OnFileSaveAs()
@@ -229,36 +230,48 @@ CPoint CStringToCPoint(const CString& str)
         ON_WM_LBUTTONDOWN()
     END_MESSAGE_MAP()
 
-    void CMainFrame::CCanvas::OnLButtonDown(UINT nFlags, CPoint p)
+    void CMainFrame::CCanvas::OnLButtonDown(UINT nFlags, CPoint mousePt)
     {
-        CString pointStr;
-        {
-            pointStr.Format(L"( %d,  %d )", p.x, p.y);
-            
-        }
-        static INT i = 0;
-        {
-            auto& frame = GetMainFrame();
-            auto& view = GetMainView();
-            auto& doc = GetMainDocument();
+        auto& frame = GetMainFrame();
+        auto& view = GetMainView();
+        auto& doc = GetMainDocument();
 
-            BOOL textSet = FALSE;
-            for (int j = 0; j < 3; ++j)            
-                if (frame.m_Panel.m_EditPoints[j].GetWindowTextLengthW() == 0)
+        BOOL ptExistsInDoc = FALSE;
+        {
+            for (int i = 0; i < doc.m_Points.size(); ++i)
+            {
+                CSize ptsDiff = doc.m_Points[i] - mousePt;
+                INT ptsDist = std::abs(std::hypot(ptsDiff.cx, ptsDiff.cy));
+                if (ptsDist < 10)
                 {
-                    frame.m_Panel.m_EditPoints[j].SetWindowTextW(pointStr);
-                    textSet = TRUE;
+                    ptExistsInDoc = TRUE;
+                    doc.m_Points[i] = mousePt;
                     break;
                 }
-            if (!textSet)
-            {
-                frame.m_Panel.m_EditPoints[i].SetWindowTextW(pointStr);
             }
+            if (!ptExistsInDoc)
+            {
+                if (doc.m_Points.size() < 3)
+                {
+                    doc.m_Points.push_back(mousePt);
+                }
+                else
+                {
+                    *std::min_element(
+                        doc.m_Points.begin(),
+                        doc.m_Points.end(),
+                        [&mousePt](const CPoint& cp1, const CPoint& cp2)
+                    {
+                        CSize sz1 = cp1 - mousePt;
+                        CSize sz2 = cp2 - mousePt;
 
-            doc.UpdateData();
+                        return std::abs(std::hypot(sz1.cx, sz1.cy)) < std::abs(std::hypot(sz2.cx, sz2.cy));
+                    }) = mousePt;
+
+                }
+            }
             view.RedrawWindow();
         }
-        ++i %= 3;
     }
     BOOL CMainFrame::CCanvas::Create(CWnd* parent)
     {
@@ -322,12 +335,22 @@ CPoint CStringToCPoint(const CString& str)
     }
     BOOL CMainFrame::CPanel::RedrawWindow()
     {
-        BOOL result;
+        auto& doc = GetMainDocument();
+        BOOL result = FALSE;
         {
             result = CButton::RedrawWindow();
 
-            for (int i = 0; i < 3; ++i)
-                m_EditPoints[i].RedrawWindow();
+            for (int i = 0; i < doc.m_Points.size(); ++i)
+            {
+                CPoint p = doc.m_Points[i];
+                CString pointStr; 
+                    pointStr.Format(L"(%d , %d)", p.x, p.y);
+                CString editStr;  
+                    m_EditPoints[i].GetWindowText(editStr);
+
+                if (editStr != pointStr)
+                    m_EditPoints[i].SetWindowText(pointStr);
+            }
 
             m_CheckPaint.RedrawWindow();
 
@@ -368,7 +391,8 @@ CPoint CStringToCPoint(const CString& str)
 
             m_CheckPaint;
             {
-                componentRect.DeflateRect(20, 0);
+                componentRect.DeflateRect(55, 0);
+                auto hIcon = AfxGetApp()->LoadIcon(IDI_ICON1);
 
                 LONG style{
                     WS_CHILD | 
@@ -376,9 +400,11 @@ CPoint CStringToCPoint(const CString& str)
                     WS_TABSTOP | 
                     WS_GROUP | 
                     BS_AUTOCHECKBOX | 
+                    BS_ICON|
                     TBS_TRANSPARENTBKGND
                 };
                 m_CheckPaint.Create(L"Paint", style, componentRect, this, CtrId::id_check_box);
+                m_CheckPaint.SetIcon(hIcon);
             }
 
             m_ButtOk;
@@ -416,7 +442,9 @@ CPoint CStringToCPoint(const CString& str)
         auto& frame = GetMainFrame();
         auto cbState = frame.m_Panel.m_CheckPaint.GetState();
 
-        frame.m_Panel.m_ButtOk.EnableWindow(cbState&BST_CHECKED? FALSE:TRUE);
+        //frame.m_Panel.m_ButtOk.EnableWindow(cbState&BST_CHECKED? FALSE:TRUE);
+
+        frame.m_Panel.m_CheckPaint.RedrawWindow();
     }
     void CMainFrame::CPanel::OnEditPointChanged()
     {
@@ -424,12 +452,13 @@ CPoint CStringToCPoint(const CString& str)
         auto& view = GetMainView();
         auto cbState = frame.m_Panel.m_CheckPaint.GetState();
 
-        if (!cbState&BST_CHECKED)
+        if (cbState&BST_CHECKED)
             return;
 
         auto& doc = GetMainDocument();
         doc.UpdateData();
-        view.RedrawWindow();
+        //view.RedrawWindow();
+        frame.m_Canvas.RedrawWindow();
     }
 #endif // !C_PANEL
 
@@ -498,6 +527,7 @@ CPoint CStringToCPoint(const CString& str)
     {
         auto& frame = GetMainFrame();
 
+        m_Points.clear();
         for (int i = 0; i < 3; ++i)
         {
             CString editPointText;
@@ -505,14 +535,9 @@ CPoint CStringToCPoint(const CString& str)
 
             if (!editPointText.IsEmpty())
             {
-                m_Points.insert(m_Points.begin(), CStringToCPoint(editPointText));
+                m_Points.push_back(CStringToCPoint(editPointText));
             }
         }
-        if (m_Points.size() > 3)
-        {
-            m_Points.resize(3);
-        }
-
         CDocument::SetModifiedFlag(TRUE);
     }
     BOOL CMainDocument::DoFileOpen()
@@ -536,6 +561,9 @@ CPoint CStringToCPoint(const CString& str)
 IMPLEMENT_DYNCREATE (CMainView, CView)
 BEGIN_MESSAGE_MAP   (CMainView, CView)
     ON_WM_LBUTTONDOWN()
+    ON_WM_MOUSEHOVER()
+    ON_WM_MOUSEMOVE()
+    ON_WM_MOUSELEAVE()
 END_MESSAGE_MAP()
 
 
@@ -581,6 +609,64 @@ void CMainView::OnLButtonDown(UINT nFlags, CPoint p)
     }
 }
 
+void CMainView::OnMouseMove(UINT nFlags, CPoint p)
+{
+    CView::OnMouseMove(nFlags, p);
+
+    TRACKMOUSEEVENT tme;
+    tme.cbSize = sizeof(TRACKMOUSEEVENT);
+    tme.dwFlags = TME_HOVER | TME_LEAVE;
+    tme.hwndTrack = GetSafeHwnd();
+
+    tme.dwHoverTime = 1;//HOVER_DEFAULT;
+    TrackMouseEvent(&tme);
+}
+
+void CMainView::OnMouseHover(UINT nFlags, CPoint p)
+{
+    auto& frame = GetMainFrame();
+    auto& doc = GetMainDocument();
+
+    auto checkPaintState = frame.m_Panel.m_CheckPaint.GetState();
+
+    if (checkPaintState&BST_CHECKED)
+    {
+        if (frame.m_Canvas.m_Rect.PtInRect(p))
+        {
+            CRect clientRect;
+            {
+                GetClientRect(clientRect);
+            }
+            p += clientRect.TopLeft() - frame.m_Canvas.m_Rect.TopLeft();
+
+
+            for (int i = 0; i < doc.m_Points.size(); ++i)
+            {
+                CSize diff = doc.m_Points[i] - p;
+                INT distance = std::sqrt(std::pow(diff.cx, 2) + std::pow(diff.cy, 2));
+                if (distance < 10)
+                {
+                    CString str;
+                    str.Format(L"%d %d", p.x, p.y);
+                    SetCursor(::LoadCursor(NULL, IDC_HAND));
+                }
+            }
+
+            if (nFlags&MK_LBUTTON)
+            {
+                frame.m_Canvas.OnLButtonDown(nFlags, p);
+            }
+
+        }
+    }
+    CView::OnMouseHover(nFlags, p);
+}
+
+void CMainView::OnMouseLeave()
+{
+    CView::OnMouseLeave();
+}
+
 IMPLEMENT_DYNCREATE(CChildFrame, CMDIChildWnd)
 BEGIN_MESSAGE_MAP(CChildFrame, CMDIChildWnd)
 END_MESSAGE_MAP()
@@ -589,3 +675,9 @@ END_MESSAGE_MAP()
 #ifndef THE_APP
 CMainApp theApp;
 #endif
+
+BOOL CMainFrame::CPanel::CCheckBox::RedrawWindow()
+{
+    CButton::RedrawWindow();
+    return 0;
+}
