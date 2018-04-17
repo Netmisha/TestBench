@@ -90,15 +90,6 @@ CPoint CStringToCPoint(const CString& str)
         }
 
         doc.DoFileOpen();
-        //for (int i = 0; i < doc.m_Points.size(); ++i)
-        //{
-        //    CPoint p = doc.m_Points[i];
-        //    CString pointStr;
-        //    {
-        //        pointStr.Format(L"( %d,  %d )", p.x, p.y);
-        //    }
-        //    frame.m_Panel.m_EditPoints[i].SetWindowText(pointStr);
-        //}
 
         frame.m_Canvas.RedrawWindow();
         frame.m_Panel.RedrawWindow();
@@ -116,13 +107,16 @@ CPoint CStringToCPoint(const CString& str)
         CString mbText
         {
             "                                   \n"
-            " at ControlPanel put point coordinates in (x,y) format \n"
-            " or click white area to get points selected automaticaly\n"
-            " click OK to get triangle drawn\n"
-            " use Edit->Clear to clear the document\n"
+            "at ControlPanel put point coordinates in (x,y) format \n"
+            "click OK to get triangle drawn\n"
+            "or select a fancy button over ok \n"
+            "and click white area to get points selected automaticaly\n"            
+            "use Edit->Clear to clear the document\n"
+            "u can create/save/open triangle documents in File menu"
+            "have fun"
             "                                   \n"
         };
-        ::MessageBox(NULL,mbText, L"Instructions", MB_OK);
+        ::MessageBox(NULL,mbText, L"Instructions", MB_OK | MB_ICONINFORMATION);
     }
     void CMainApp::OnHelpAbouttestbench()
     {
@@ -199,7 +193,7 @@ CPoint CStringToCPoint(const CString& str)
         m_Panel.BringWindowToTop();
     }
 
-    onEditClear = FALSE;
+    m_OnEditClear = FALSE;
     return 0;
 }
     void CMainFrame::OnLButtonDown(UINT nFlags, CPoint p)
@@ -212,7 +206,7 @@ CPoint CStringToCPoint(const CString& str)
 }    
     void CMainFrame::OnEditClear()
     {
-        onEditClear = TRUE;
+        m_OnEditClear = TRUE;
         {
             auto& frame = GetMainFrame();
             auto& doc = GetMainDocument();
@@ -224,7 +218,7 @@ CPoint CStringToCPoint(const CString& str)
             frame.m_Canvas.RedrawWindow();
             frame.m_Panel.RedrawWindow();
         }
-        onEditClear = FALSE;
+        m_OnEditClear = FALSE;
     }
 #ifndef C_MAIN_FRAME_NESTED
 
@@ -273,7 +267,8 @@ CPoint CStringToCPoint(const CString& str)
 
                 }
             }
-            view.RedrawWindow();
+            frame.m_Panel.RedrawWindow();
+            //view.RedrawWindow();
         }
     }
     BOOL CMainFrame::CCanvas::Create(CWnd* parent)
@@ -473,7 +468,7 @@ CPoint CStringToCPoint(const CString& str)
     {
         auto& frame = GetMainFrame();
 
-        if (frame.onEditClear)
+        if (frame.m_OnEditClear)
             return;
 
         auto cbState = frame.m_Panel.m_CheckPaint.GetState();
@@ -482,7 +477,7 @@ CPoint CStringToCPoint(const CString& str)
             return;
 
         GetMainDocument().UpdateData();
-        GetMainView().RedrawWindow();
+        //GetMainView().RedrawWindow();
         frame.m_Canvas.RedrawWindow();
     }
 #endif // !C_PANEL
@@ -647,44 +642,38 @@ void CMainView::OnMouseMove(UINT nFlags, CPoint p)
     TrackMouseEvent(&tme);
 }
 
-void CMainView::OnMouseHover(UINT nFlags, CPoint p)
+void CMainView::OnMouseHover(UINT nFlags, CPoint mousePt)
 {
     auto& frame = GetMainFrame();
     auto& doc = GetMainDocument();
 
-    auto checkPaintState = frame.m_Panel.m_CheckPaint.GetState();
+    auto checkPaintState 
+        = frame.m_Panel.m_CheckPaint.GetState();
 
-    if (checkPaintState&BST_CHECKED)
-    {
-        if (frame.m_Canvas.m_Rect.PtInRect(p))
+    if (checkPaintState&BST_CHECKED)    
+        if (frame.m_Canvas.m_Rect.PtInRect(mousePt))
         {
-            CRect clientRect;
-            {
+            CRect clientRect;            
                 GetClientRect(clientRect);
-            }
-            p += clientRect.TopLeft() - frame.m_Canvas.m_Rect.TopLeft();
-
+            
+            // offsetting mouse pt in relation to canvas
+            mousePt += clientRect.TopLeft() - frame.m_Canvas.m_Rect.TopLeft();
 
             for (int i = 0; i < doc.m_Points.size(); ++i)
             {
-                CSize diff = doc.m_Points[i] - p;
-                INT distance = std::sqrt(std::pow(diff.cx, 2) + std::pow(diff.cy, 2));
-                if (distance < 5)
-                {
-                    CString str;
-                    str.Format(L"%d %d", p.x, p.y);
-                    SetCursor(::LoadCursor(NULL, IDC_HAND));
-                }
+                CSize ptsDiff = doc.m_Points[i] - mousePt;
+                INT ptsDist = std::hypot(ptsDiff.cx, ptsDiff.cy);
+                if (std::abs(ptsDist) < 5)                
+                    SetCursor(::LoadCursor(NULL, IDC_HAND));                
             }
 
             if (nFlags&MK_LBUTTON)
             {
-                frame.m_Canvas.OnLButtonDown(nFlags, p);
+                frame.m_Canvas.OnLButtonDown(nFlags, mousePt);
             }
-
         }
-    }
-    CView::OnMouseHover(nFlags, p);
+    
+    CView::OnMouseHover(nFlags, mousePt);
 }
 
 void CMainView::OnMouseLeave()
@@ -700,9 +689,3 @@ END_MESSAGE_MAP()
 #ifndef THE_APP
 CMainApp theApp;
 #endif
-
-BOOL CMainFrame::CPanel::CCheckBox::RedrawWindow()
-{
-    CButton::RedrawWindow();
-    return 0;
-}

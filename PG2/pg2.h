@@ -60,19 +60,13 @@ public:
         afx_msg void OnEditPointChanged();
     public:
         enum { ID = id_panel };
-        class CCheckBox :
-            public CButton
-        {
-        public:
-            BOOL RedrawWindow();
-        };
         BOOL Create(CWnd* parent);
         BOOL RedrawWindow();
 
-        CRect m_Rect;
-        CEdit m_EditPoints[3];
-        CCheckBox m_CheckPaint;
-        CButton m_ButtOk;
+        CRect       m_Rect;
+        CEdit       m_EditPoints[3];
+        CButton     m_CheckPaint;
+        CButton     m_ButtOk;
     };
 
     afx_msg BOOL PreCreateWindow(CREATESTRUCT& cs);
@@ -84,7 +78,7 @@ public:
     CCanvas m_Canvas;
     CPanel  m_Panel;
 
-    BOOL onEditClear;
+    BOOL m_OnEditClear;
 };
 class CMainDocument: 
     public CDocument
