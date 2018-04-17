@@ -1,0 +1,11 @@
+<issues>
+  <issue name="Superfluous OK button">
+    <description>
+      button-OK seems odd since it doesnt rly
+      extend functionality already provided by
+      button-FancyTriangle
+    </description>
+  </issue>
+  
+ 
+</issues>

@@ -26,8 +26,8 @@ enum CtrId
     id_edit_point,
     id_button_ok
     = id_edit_point + 3,
-    id_check_box,
-    id_edit
+    id_check_box_paint,
+    id_check_box_run,
 };
 
 class CMainFrame : 
@@ -56,7 +56,8 @@ public:
         DECLARE_MESSAGE_MAP();
         afx_msg int  OnCreate(LPCREATESTRUCT lpCreateStruct);
         afx_msg void OnButtonClickOk();
-        afx_msg void OnButtonClickCp();
+        afx_msg void OnButtonClickPaint();
+        afx_msg void OnButtonClickRun();
         afx_msg void OnEditPointChanged();
     public:
         enum { ID = id_panel };
@@ -65,7 +66,8 @@ public:
 
         CRect       m_Rect;
         CEdit       m_EditPoints[3];
-        CButton     m_CheckPaint;
+        CButton     m_CheckBoxPaint;
+        CButton     m_CheckBoxRun;
         CButton     m_ButtOk;
     };
 
@@ -79,6 +81,7 @@ public:
     CPanel  m_Panel;
 
     BOOL m_OnEditClear;
+    afx_msg void OnHelpSomeIssues();
 };
 class CMainDocument: 
     public CDocument
@@ -94,6 +97,7 @@ public:
     BOOL DoFileOpen();
 
     std::vector<CPoint> m_Points;
+    std::vector<CPoint> m_RunningPoints;
 };
 class CMainView: 
     public CView

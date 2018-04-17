@@ -11,6 +11,8 @@ using String = std::basic_string<WCHAR>;
 using Regex = std::basic_regex<WCHAR>;
 using StringStream = std::wstringstream;
 
+#include "xmlHelpIssues.h"
+
 
 CPoint CStringToCPoint(const CString& str)
 {
@@ -94,14 +96,11 @@ CPoint CStringToCPoint(const CString& str)
         frame.m_Canvas.RedrawWindow();
         frame.m_Panel.RedrawWindow();
     }
-
     void CMainApp::OnFileSaveAs()
     {
         auto& doc = GetMainDocument();
         doc.DoFileSave();
     }
-
-
     void CMainApp::OnHelpBasics()
     {
         CString mbText
@@ -130,6 +129,12 @@ CPoint CStringToCPoint(const CString& str)
         MessageBox(GetRoutingFrame()->GetSafeHwnd(), mbText, L"About TestBench", MB_OK);
         
     }
+    void CMainFrame::OnHelpSomeIssues()
+    {
+        CIssueFrame* issFrmPtr = new CIssueFrame;
+        issFrmPtr->Create(static_cast<CWnd*>(this));
+        issFrmPtr->ShowWindow(SW_SHOW);
+    }
 
 #endif // !C_MAIN_APP
 
@@ -139,6 +144,7 @@ CPoint CStringToCPoint(const CString& str)
         ON_WM_CREATE()
         ON_WM_LBUTTONDOWN()
         ON_COMMAND(ID_EDIT_CLEAR, &CMainFrame::OnEditClear)
+        ON_COMMAND(ID_HELP_SOMEISSUES, &CMainFrame::OnHelpSomeIssues)
     END_MESSAGE_MAP()
     
     BOOL CMainFrame::PreCreateWindow(CREATESTRUCT& cs)
@@ -292,25 +298,38 @@ CPoint CStringToCPoint(const CString& str)
     }
     BOOL CMainFrame::CCanvas::RedrawWindow()
     {
+        auto& frame = GetMainFrame();
+        auto& doc = GetMainDocument();
         BOOL result = FALSE;
         {
             result = CStatic::RedrawWindow();
-          
-            auto& points = GetMainDocument().m_Points;
-            if (!points.empty()) 
+
+            if (!doc.m_Points.empty())
             {
                 CDC&  dc = *GetDC();
                 dc.SelectObject(m_PenRed);
                 dc.SelectObject(m_Brush);
 
-                dc.Polygon(points.begin()._Ptr, points.size());
+                dc.Polygon(doc.m_Points.begin()._Ptr, doc.m_Points.size());
 
                 dc.SelectObject(m_PenBlack);
-                for (int i = 0; i < points.size(); ++i)
+                for (int i = 0; i < doc.m_Points.size(); ++i)
                 {
-                    CPoint p = points[i];
+                    CPoint p = doc.m_Points[i];
                     p.Offset(-std::sqrt(5), -std::sqrt(5));
                     dc.Ellipse(CRect(p, CSize(5, 5)));
+                }
+            }
+
+            auto cbState = frame.m_Panel.m_CheckBoxPaint.GetState();
+            if (cbState&BST_CHECKED)
+            {
+                if (!doc.m_RunningPoints.empty())
+                {
+                    CDC&  dc = *GetDC();
+                    dc.SelectObject(m_PenRed);
+                    dc.SelectObject(GetStockObject(NULL_BRUSH));
+                    dc.Polygon(doc.m_RunningPoints.begin()._Ptr, doc.m_RunningPoints.size());
                 }
             }
         }
@@ -321,7 +340,8 @@ CPoint CStringToCPoint(const CString& str)
     BEGIN_MESSAGE_MAP(CMainFrame::CPanel, CStatic)
         ON_WM_CREATE()
         ON_BN_CLICKED(CtrId::id_button_ok, CMainFrame::CPanel::OnButtonClickOk)
-        ON_BN_CLICKED(CtrId::id_check_box, CMainFrame::CPanel::OnButtonClickCp)
+        ON_BN_CLICKED(CtrId::id_check_box_paint, CMainFrame::CPanel::OnButtonClickPaint)
+        ON_BN_CLICKED(CtrId::id_check_box_run, CMainFrame::CPanel::OnButtonClickRun)
         ON_EN_CHANGE(CtrId::id_edit_point, CMainFrame::CPanel::OnEditPointChanged)
         ON_EN_CHANGE(CtrId::id_edit_point+1, CMainFrame::CPanel::OnEditPointChanged)
         ON_EN_CHANGE(CtrId::id_edit_point+2, CMainFrame::CPanel::OnEditPointChanged)
@@ -370,7 +390,8 @@ CPoint CStringToCPoint(const CString& str)
                 }
             }
 
-            m_CheckPaint.RedrawWindow();
+            m_CheckBoxRun.RedrawWindow();
+            m_CheckBoxPaint.RedrawWindow();
 
             m_ButtOk.RedrawWindow();
         }
@@ -407,22 +428,39 @@ CPoint CStringToCPoint(const CString& str)
                 }
             }
 
-            m_CheckPaint;
+            m_CheckBoxPaint;
             {
-                componentRect.DeflateRect(55, 0);
+                componentRect.MoveToXY(componentRect.left+13, componentRect.top + 25);
+                componentRect.DeflateRect(10, 0, 100, 0);
                 auto hIcon = AfxGetApp()->LoadIcon(IDI_ICON1);
 
                 LONG style{
-                    WS_CHILD | 
-                    WS_VISIBLE | 
-                    WS_TABSTOP | 
-                    WS_GROUP | 
-                    BS_AUTOCHECKBOX | 
-                    BS_ICON|
+                    WS_CHILD 
+                    | WS_VISIBLE 
+                    | WS_TABSTOP 
+                    | BS_AUTOCHECKBOX 
+                    | BS_ICON
+                    | TBS_TRANSPARENTBKGND
+                };
+                m_CheckBoxPaint.Create(L"Paint", style, componentRect, this, CtrId::id_check_box_paint);
+                m_CheckBoxPaint.SetIcon(hIcon);
+            }
+
+            m_CheckBoxRun;
+            {
+                componentRect.MoveToX(componentRect.right + 20);
+                auto hIcon = AfxGetApp()->LoadIcon(IDI_ICON2);
+                LONG style{
+                    WS_CHILD |
+                    WS_VISIBLE |
+                    WS_TABSTOP |
+                    //BS_CHECKBOX|
+                    BS_AUTOCHECKBOX |
+                    BS_ICON |
                     TBS_TRANSPARENTBKGND
                 };
-                m_CheckPaint.Create(L"Paint", style, componentRect, this, CtrId::id_check_box);
-                m_CheckPaint.SetIcon(hIcon);
+                m_CheckBoxRun.Create(L"Run", style, componentRect, this, CtrId::id_check_box_run);
+                m_CheckBoxRun.SetIcon(hIcon);
             }
 
             m_ButtOk;
@@ -445,7 +483,6 @@ CPoint CStringToCPoint(const CString& str)
         }
         return result;
     }
-
     void CMainFrame::CPanel::OnButtonClickOk()
     {
         auto& frame = GetMainFrame();
@@ -455,14 +492,167 @@ CPoint CStringToCPoint(const CString& str)
 
         frame.m_Canvas.RedrawWindow();
     }
-    void CMainFrame::CPanel::OnButtonClickCp()
+
+    void RotateTriangleVector(std::vector<CPoint>& vec, CRect border)
+    {
+        if (vec.empty())        
+            return;
+
+        border.OffsetRect(-10, -10);
+
+        //CRect triRect
+        //{
+        //    std::min_element(vec.begin(), vec.end(), [](CPoint& p1, CPoint& p2) {return p1.x < p2.x;})->x,
+        //    std::min_element(vec.begin(), vec.end(), [](CPoint& p1, CPoint& p2) {return p1.y < p2.y;})->y,
+        //    std::max_element(vec.begin(), vec.end(), [](CPoint& p1, CPoint& p2) {return p1.x < p2.x;})->x,
+        //    std::max_element(vec.begin(), vec.end(), [](CPoint& p1, CPoint& p2) {return p1.y < p2.y;})->y,
+        //};
+
+        CPoint c;
+        {
+            c = std::accumulate(
+                vec.begin(), 
+                vec.end(), 
+                CPoint(0, 0), 
+                [&vec](CPoint& acc, CPoint& val) 
+            {
+                acc.x += ((DOUBLE)val.x) / vec.size();
+                acc.y += ((DOUBLE)val.y) / vec.size();
+                return acc;
+            });
+        }
+        auto pi = 3.141592653589793238462643383279502884L;
+        static auto fi = (pi / 180) * .5;
+
+        for (int i = 0; i < vec.size(); ++i)
+        {
+            CPoint p = vec[i];
+            auto r = std::hypot(c.x - p.x, c.y - p.y);
+
+            p.x = std::cos(fi) * (p.x - c.x) - std::sin(fi)*(p.y - c.y) +c.x + .5;
+            p.y = std::sin(fi) * (p.x - c.x) + std::cos(fi)*(p.y - c.y) +c.y + .5;
+
+            vec[i] = p;
+        }
+
+        //CRect triRectNew
+        //{
+        //    std::min_element(vec.begin(), vec.end(), [](CPoint& p1, CPoint& p2) {return p1.x < p2.x;})->x,
+        //    std::min_element(vec.begin(), vec.end(), [](CPoint& p1, CPoint& p2) {return p1.y < p2.y;})->y,
+        //    std::max_element(vec.begin(), vec.end(), [](CPoint& p1, CPoint& p2) {return p1.x < p2.x;})->x,
+        //    std::max_element(vec.begin(), vec.end(), [](CPoint& p1, CPoint& p2) {return p1.y < p2.y;})->y,
+        //};
+
+        //CSize diff = triRect.Size() - triRectNew.Size();
+
+        for (int i = 0; i < 3; ++i)
+        {
+            if (!border.PtInRect(vec[i])) 
+            {
+                fi += .1;
+                fi *= -1;
+            }
+            //vec[i].x += diff.cx;
+            //vec[i].y += diff.cy;
+        }
+    }
+    void MoveTriangleVector(std::vector<CPoint>& vec, CRect border)
+    {
+        if (vec.empty())
+            return;
+
+        border.OffsetRect(-10, -10);
+        static CSize movementVector(4, 4);
+
+        CRect triRect
+        {
+            std::min_element(vec.begin(), vec.end(), [](CPoint& p1, CPoint& p2) {return p1.x < p2.x;})->x,
+            std::min_element(vec.begin(), vec.end(), [](CPoint& p1, CPoint& p2) {return p1.y < p2.y;})->y,
+            std::max_element(vec.begin(), vec.end(), [](CPoint& p1, CPoint& p2) {return p1.x < p2.x;})->x,
+            std::max_element(vec.begin(), vec.end(), [](CPoint& p1, CPoint& p2) {return p1.y < p2.y;})->y,
+        };
+
+        CSize fix(0, 0);
+
+        if (LONG diff = triRect.top - border.top < -movementVector.cy)
+        {
+           // movementVector.cy += movementVector.cy / std::abs(movementVector.cy);
+            movementVector.cy *= -1;
+            fix.cy = diff;
+        }
+
+        if (LONG diff = triRect.bottom - border.bottom > -movementVector.cy)
+        {
+           // movementVector.cy += movementVector.cy / std::abs(movementVector.cy);
+            movementVector.cy *= -1;
+            fix.cy = diff;
+        }
+
+        if (LONG diff = triRect.left - border.left < -movementVector.cx)
+        {
+            //movementVector.cx += movementVector.cx / std::abs(movementVector.cx);
+            movementVector.cx *= -1;
+            fix.cx = diff;
+        }
+
+        if (LONG diff = triRect.right - border.right > -movementVector.cx)
+        {
+            //movementVector.cx += movementVector.cx / std::abs(movementVector.cx);
+            movementVector.cx *= -1;
+            fix.cx = diff;
+        }
+
+        for (int i = 0; i < vec.size(); ++i)
+        {
+            vec[i] += fix;
+            vec[i] += movementVector;
+        }
+
+    }
+
+    UINT __cdecl RunningPointsThread(LPVOID param)
+    {
+        CMainFrame& frame   = *reinterpret_cast<CMainFrame*>(param);
+        CMainView& view     = *dynamic_cast<CMainView*>(frame.GetActiveView());
+        CMainDocument& doc  = *dynamic_cast<CMainDocument*>(view.GetDocument());
+
+        while (true)
+        {
+            RotateTriangleVector(doc.m_RunningPoints, frame.m_Canvas.m_Rect);
+            MoveTriangleVector(doc.m_RunningPoints, frame.m_Canvas.m_Rect);
+            frame.m_Canvas.RedrawWindow();
+            Sleep(50);
+        }
+    }
+
+    void CMainFrame::CPanel::OnButtonClickPaint()
     {
         auto& frame = GetMainFrame();
-        auto cbState = frame.m_Panel.m_CheckPaint.GetState();
+        auto cbState = frame.m_Panel.m_CheckBoxPaint.GetState();
 
         //frame.m_Panel.m_ButtOk.EnableWindow(cbState&BST_CHECKED? FALSE:TRUE);
 
-        frame.m_Panel.m_CheckPaint.RedrawWindow();
+        frame.m_Panel.m_CheckBoxPaint.RedrawWindow();
+    }
+    void CMainFrame::CPanel::OnButtonClickRun()
+    {
+        auto& frame = GetMainFrame();
+        auto& doc = GetMainDocument();
+
+        static CWinThread* triRunner;
+
+        auto cbState = frame.m_Panel.m_CheckBoxRun.GetState();
+        if (cbState&BST_CHECKED)
+        {
+            doc.m_RunningPoints = doc.m_Points;
+            frame.OnEditClear();
+            triRunner = AfxBeginThread(RunningPointsThread, &frame, THREAD_PRIORITY_NORMAL);
+        }
+        else
+        {
+            doc.m_RunningPoints.clear();
+        }
+
     }
     void CMainFrame::CPanel::OnEditPointChanged()
     {
@@ -471,7 +661,7 @@ CPoint CStringToCPoint(const CString& str)
         if (frame.m_OnEditClear)
             return;
 
-        auto cbState = frame.m_Panel.m_CheckPaint.GetState();
+        auto cbState = frame.m_Panel.m_CheckBoxPaint.GetState();
 
         if (!cbState&BST_CHECKED)
             return;
@@ -612,7 +802,7 @@ void CMainView::OnLButtonDown(UINT nFlags, CPoint p)
 {
     auto& frame = GetMainFrame();
 
-    auto checkPaintState = frame.m_Panel.m_CheckPaint.GetState();
+    auto checkPaintState = frame.m_Panel.m_CheckBoxPaint.GetState();
 
     if (checkPaintState&BST_CHECKED)
     {
@@ -648,7 +838,7 @@ void CMainView::OnMouseHover(UINT nFlags, CPoint mousePt)
     auto& doc = GetMainDocument();
 
     auto checkPaintState 
-        = frame.m_Panel.m_CheckPaint.GetState();
+        = frame.m_Panel.m_CheckBoxPaint.GetState();
 
     if (checkPaintState&BST_CHECKED)    
         if (frame.m_Canvas.m_Rect.PtInRect(mousePt))
