@@ -46,7 +46,8 @@ public:
         BOOL RedrawWindow();
 
         CRect  m_Rect;
-        CPen   m_Pen;
+        CPen   m_PenRed;
+        CPen   m_PenBlack;
         CBrush m_Brush;
     };
     class CPanel :
@@ -82,6 +83,8 @@ public:
     CRect   m_Rect;
     CCanvas m_Canvas;
     CPanel  m_Panel;
+
+    BOOL onEditClear;
 };
 class CMainDocument: 
     public CDocument

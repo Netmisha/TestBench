@@ -199,6 +199,7 @@ CPoint CStringToCPoint(const CString& str)
         m_Panel.BringWindowToTop();
     }
 
+    onEditClear = FALSE;
     return 0;
 }
     void CMainFrame::OnLButtonDown(UINT nFlags, CPoint p)
@@ -211,17 +212,19 @@ CPoint CStringToCPoint(const CString& str)
 }    
     void CMainFrame::OnEditClear()
     {
-        auto& doc = GetMainDocument();
-        while (doc.m_Points.size())
-            doc.m_Points.pop_back();
-
-        for (int i = 0; i < 3; ++i)
+        onEditClear = TRUE;
         {
-            m_Panel.m_EditPoints[i].SetWindowTextW(L"");
+            auto& frame = GetMainFrame();
+            auto& doc = GetMainDocument();
+            auto& view = GetMainView();
+
+            doc.m_Points.clear();
+
+            view.RedrawWindow();
+            frame.m_Canvas.RedrawWindow();
+            frame.m_Panel.RedrawWindow();
         }
-        
-        m_Canvas.RedrawWindow();
-        //RedrawWindow();
+        onEditClear = FALSE;
     }
 #ifndef C_MAIN_FRAME_NESTED
 
@@ -242,7 +245,7 @@ CPoint CStringToCPoint(const CString& str)
             {
                 CSize ptsDiff = doc.m_Points[i] - mousePt;
                 INT ptsDist = std::abs(std::hypot(ptsDiff.cx, ptsDiff.cy));
-                if (ptsDist < 10)
+                if (ptsDist < 5)
                 {
                     ptExistsInDoc = TRUE;
                     doc.m_Points[i] = mousePt;
@@ -286,7 +289,8 @@ CPoint CStringToCPoint(const CString& str)
             }
             result = CStatic::Create(NULL, style, m_Rect, parent, CtrId::id_canvas);
 
-            m_Pen.CreatePen(PS_SOLID, 1, RGB(0xff, 0, 0));
+            m_PenRed.CreatePen(PS_SOLID, 1, RGB(0xff, 0, 0));
+            m_PenBlack.CreatePen(PS_SOLID, 1, ~0);
             m_Brush.CreateHatchBrush(HS_DIAGCROSS, RGB(0, 0xff, 0));
         }
         return result;
@@ -296,14 +300,24 @@ CPoint CStringToCPoint(const CString& str)
         BOOL result = FALSE;
         {
             result = CStatic::RedrawWindow();
-
-            CDC&  dc = *GetDC();
-            dc.SelectObject(m_Pen);
-            dc.SelectObject(m_Brush);
-            
+          
             auto& points = GetMainDocument().m_Points;
-            if(points.size()>0)
+            if (!points.empty()) 
+            {
+                CDC&  dc = *GetDC();
+                dc.SelectObject(m_PenRed);
+                dc.SelectObject(m_Brush);
+
                 dc.Polygon(points.begin()._Ptr, points.size());
+
+                dc.SelectObject(m_PenBlack);
+                for (int i = 0; i < points.size(); ++i)
+                {
+                    CPoint p = points[i];
+                    p.Offset(-std::sqrt(5), -std::sqrt(5));
+                    dc.Ellipse(CRect(p, CSize(5, 5)));
+                }
+            }
         }
         return result;
     }
@@ -340,16 +354,25 @@ CPoint CStringToCPoint(const CString& str)
         {
             result = CButton::RedrawWindow();
 
-            for (int i = 0; i < doc.m_Points.size(); ++i)
+            for (int i = 0; i < 3; ++i)
             {
-                CPoint p = doc.m_Points[i];
-                CString pointStr; 
-                    pointStr.Format(L"(%d , %d)", p.x, p.y);
-                CString editStr;  
+                CString editStr;
                     m_EditPoints[i].GetWindowText(editStr);
 
-                if (editStr != pointStr)
-                    m_EditPoints[i].SetWindowText(pointStr);
+                if (i < doc.m_Points.size())
+                {
+                    CPoint p = doc.m_Points[i];
+                    CString pointStr;
+                        pointStr.Format(L"(%d , %d)", p.x, p.y);
+
+                    if (editStr != pointStr)
+                        m_EditPoints[i].SetWindowText(pointStr);
+                }
+                else
+                {
+                    if (editStr != L"")
+                        m_EditPoints[i].SetWindowText(L"");
+                }
             }
 
             m_CheckPaint.RedrawWindow();
@@ -449,15 +472,17 @@ CPoint CStringToCPoint(const CString& str)
     void CMainFrame::CPanel::OnEditPointChanged()
     {
         auto& frame = GetMainFrame();
-        auto& view = GetMainView();
-        auto cbState = frame.m_Panel.m_CheckPaint.GetState();
 
-        if (cbState&BST_CHECKED)
+        if (frame.onEditClear)
             return;
 
-        auto& doc = GetMainDocument();
-        doc.UpdateData();
-        //view.RedrawWindow();
+        auto cbState = frame.m_Panel.m_CheckPaint.GetState();
+
+        if (!cbState&BST_CHECKED)
+            return;
+
+        GetMainDocument().UpdateData();
+        GetMainView().RedrawWindow();
         frame.m_Canvas.RedrawWindow();
     }
 #endif // !C_PANEL
@@ -644,7 +669,7 @@ void CMainView::OnMouseHover(UINT nFlags, CPoint p)
             {
                 CSize diff = doc.m_Points[i] - p;
                 INT distance = std::sqrt(std::pow(diff.cx, 2) + std::pow(diff.cy, 2));
-                if (distance < 10)
+                if (distance < 5)
                 {
                     CString str;
                     str.Format(L"%d %d", p.x, p.y);
