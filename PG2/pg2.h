@@ -9,14 +9,16 @@
 class CMainApp : 
     public CWinApp
 {
-public:
-    BOOL InitInstance();
     DECLARE_MESSAGE_MAP()
-    afx_msg void OnHelpBasics();
-    afx_msg void OnHelpAbouttestbench();
-    afx_msg void OnFileSaveAs();
-    afx_msg void OnFileNew();
-    afx_msg void OnFileOpen();
+public:
+    virtual afx_msg void OnHelpBasics();
+    virtual afx_msg void OnHelpAboutTestBench();
+    virtual afx_msg void OnFileSaveAs();
+    virtual afx_msg void OnFileNew();
+    virtual afx_msg void OnFileOpen();
+    virtual afx_msg void OnAppExit();
+    BOOL InitInstance();
+    CWinThread* m_RunningPointsThreadPtr;
 };
 
 enum CtrId
@@ -26,7 +28,7 @@ enum CtrId
     id_edit_point,
     id_button_ok
     = id_edit_point + 3,
-    id_check_box_paint,
+    id_check_box_pnt,
     id_check_box_run,
 };
 
@@ -83,6 +85,30 @@ public:
     BOOL m_OnEditClear;
     afx_msg void OnHelpSomeIssues();
 };
+
+class DPoint :
+    public CPoint
+{
+public:
+    long double x;
+    long double y;
+    operator CPoint() const
+    {
+        return CPoint((LONG)x, (LONG)y);
+    }
+
+    DPoint(const CPoint& obj) :
+        CPoint(obj),
+        x(obj.x),
+        y(obj.y)
+    {}
+    DPoint(const DPoint& obj):
+        CPoint(obj.operator CPoint()),
+        x(obj.x),
+        y(obj.y)
+    {}
+};
+
 class CMainDocument: 
     public CDocument
 {
@@ -97,7 +123,7 @@ public:
     BOOL DoFileOpen();
 
     std::vector<CPoint> m_Points;
-    std::vector<CPoint> m_RunningPoints;
+    std::vector<DPoint> m_RunningPoints;
 };
 class CMainView: 
     public CView

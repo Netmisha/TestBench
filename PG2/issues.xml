@@ -1,11 +1,47 @@
 <issues>
-  <issue name="Superfluous OK button">
-    <description>
-      button-OK seems odd since it doesnt rly
-      extend functionality already provided by
-      button-FancyTriangle
-    </description>
-  </issue>
   
+  <issue name="issue 1">
+    <description>some issue</description>
+    <expected_result>result we expect</expected_result>
+    <actual_result>result we got</actual_result>
+    <steps_to_reproduce>
+      1. step 1
+      2. step 2
+      3. step 3
+    </steps_to_reproduce>
+  </issue>
+
+  <issue name="issue 2">
+    <description>some issue</description>
+    <expected_result>result we expect</expected_result>
+    <actual_result>result we got</actual_result>
+    <steps_to_reproduce>
+      1. step 1
+      2. step 2
+      3. step 3
+    </steps_to_reproduce>
+  </issue>
+
+  <issue name="issue 3">
+    <description>some issue</description>
+    <expected_result>result we expect</expected_result>
+    <actual_result>result we got</actual_result>
+    <steps_to_reproduce>
+      1. step 1
+      2. step 2
+      3. step 3
+    </steps_to_reproduce>
+  </issue>
+
+  <issue name="issue 4">
+    <description>some issue</description>
+    <expected_result>result we expect</expected_result>
+    <actual_result>result we got</actual_result>
+    <steps_to_reproduce>
+      1. step 1
+      2. step 2
+      3. step 3
+    </steps_to_reproduce>
+  </issue>
  
 </issues>
