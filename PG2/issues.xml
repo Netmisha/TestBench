@@ -1,5 +1,5 @@
 <issues>
-    <issue name="Figure rotation bug">
+    <issue name="Figure rotation bug (fixed)">
         <description>Triangle form and size gets corrupted on rotation</description>
         <expected_result>Triangle rotates around centroid preserving original shape and size</expected_result>
         <actual_result>Triangle becomes smaller and loses original alignment; more so on gaining spin momentum</actual_result>
@@ -42,8 +42,8 @@
     </issue>
     <issue name="123">
         <description>23</description>
-        <expected_result></expected_result>
-        <actual_result></actual_result>
+        <expected_result />
+        <actual_result />
         <steps_to_reproduce>
             <step>12</step>
             <step>123</step>

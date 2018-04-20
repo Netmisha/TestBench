@@ -539,8 +539,8 @@ CPoint CStringToCPoint(const CString& str)
             DPoint p = vec[i];
             auto r = std::hypot(c.x - p.x, c.y - p.y);
 
-            p.x = std::cos(fi) * (p.x - c.x) - std::sin(fi)*(p.y - c.y) +c.x;
-            p.y = std::sin(fi) * (p.x - c.x) + std::cos(fi)*(p.y - c.y) +c.y;
+            p.x = std::cos(fi) * (vec[i].x - c.x) - std::sin(fi)*(vec[i].y - c.y) +c.x;
+            p.y = std::sin(fi) * (vec[i].x - c.x) + std::cos(fi)*(vec[i].y - c.y) +c.y;
 
             vec[i] = p;
         }
