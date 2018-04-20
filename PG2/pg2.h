@@ -96,7 +96,11 @@ public:
     {
         return CPoint((LONG)x, (LONG)y);
     }
-
+    
+    DPoint(long double _x, long double _y) :
+        CPoint((LONG)_x, (LONG)_y),
+        x(_x), y(_y)
+    {}
     DPoint(const CPoint& obj) :
         CPoint(obj),
         x(obj.x),

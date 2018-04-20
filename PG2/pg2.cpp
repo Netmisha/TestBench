@@ -348,6 +348,23 @@ CPoint CStringToCPoint(const CString& str)
                     });
                 }
                 dc.Polygon(cp.begin()._Ptr, doc.m_RunningPoints.size());
+                dc.Rectangle(CRect
+                {
+                    CPoint
+                {
+                    std::min_element(doc.m_RunningPoints.begin(), doc.m_RunningPoints.end(), 
+                    [](CPoint& p1, CPoint& p2) {return p1.x < p2.x;})->operator CPoint().x,
+                    std::min_element(doc.m_RunningPoints.begin(), doc.m_RunningPoints.end(), 
+                    [](CPoint& p1, CPoint& p2) {return p1.y < p2.y;})->operator CPoint().y
+                },
+                    CPoint
+                {
+                    std::max_element(doc.m_RunningPoints.begin(), doc.m_RunningPoints.end(), 
+                    [](CPoint& p1, CPoint& p2) {return p1.x < p2.x;})->operator CPoint().x,
+                    std::max_element(doc.m_RunningPoints.begin(), doc.m_RunningPoints.end(), 
+                    [](CPoint& p1, CPoint& p2) {return p1.y < p2.y;})->operator CPoint().y
+                }
+                });
             }
 
         }
@@ -511,6 +528,49 @@ CPoint CStringToCPoint(const CString& str)
         frame.m_Canvas.RedrawWindow();
     }
 
+    void MoveAndRotateVector(std::vector<DPoint>& vec, CRect border)
+    {
+        if (vec.empty())
+            return;
+
+        static CSize moveSpeed{ 5,5 };
+        auto pi = 3.141592653589793238462643383279502884L;
+        static DOUBLE fi = (pi / 180) * 3;
+
+        auto cmpX = [](DPoint& p1, DPoint& p2) {return p1.x < p2.x;};
+        auto cmpY = [](DPoint& p1, DPoint& p2) {return p1.y < p2.y;};
+
+        std::vector<DPoint> rect = 
+        {
+            DPoint
+            {
+                std::min_element(vec.begin(), vec.end(), cmpX)->x,
+                std::min_element(vec.begin(), vec.end(), cmpY)->y
+            },
+            DPoint
+            {
+                std::max_element(vec.begin(), vec.end(), cmpX)->x,
+                std::min_element(vec.begin(), vec.end(), cmpY)->y
+
+            },
+            DPoint
+            {
+                std::min_element(vec.begin(), vec.end(), cmpX)->x,
+                std::max_element(vec.begin(), vec.end(), cmpY)->y
+            },
+            DPoint
+            {
+                std::max_element(vec.begin(), vec.end(), cmpX)->x,
+                std::max_element(vec.begin(), vec.end(), cmpY)->y
+            }
+        };
+    
+
+
+
+    }
+
+
     void RotateTriangleVector(std::vector<DPoint>& vec, CRect border)
     {
         if (vec.empty())        
@@ -549,8 +609,8 @@ CPoint CStringToCPoint(const CString& str)
         {
             if (!border.PtInRect(vec[i])) 
             {
-                fi += .1;
-                fi *= -1;
+                fi *= 1;
+                //fi += .1;
             }
         }
     }
@@ -560,37 +620,45 @@ CPoint CStringToCPoint(const CString& str)
             return;
 
         border.OffsetRect(-10, -10);
-        static CSize movementVector(14, 14);
+        static CSize movementVector(4, 4);
 
         CRect triRect
         {
+            CPoint
+            {
             std::min_element(vec.begin(), vec.end(), [](CPoint& p1, CPoint& p2) {return p1.x < p2.x;})->operator CPoint().x,
-            std::min_element(vec.begin(), vec.end(), [](CPoint& p1, CPoint& p2) {return p1.y < p2.y;})->operator CPoint().y,
+            std::min_element(vec.begin(), vec.end(), [](CPoint& p1, CPoint& p2) {return p1.y < p2.y;})->operator CPoint().y
+            },
+            CPoint
+            {
             std::max_element(vec.begin(), vec.end(), [](CPoint& p1, CPoint& p2) {return p1.x < p2.x;})->operator CPoint().x,
-            std::max_element(vec.begin(), vec.end(), [](CPoint& p1, CPoint& p2) {return p1.y < p2.y;})->operator CPoint().y,
+            std::max_element(vec.begin(), vec.end(), [](CPoint& p1, CPoint& p2) {return p1.y < p2.y;})->operator CPoint().y
+            }
         };
 
         CSize fix(0, 0);
 
-        if (LONG diff = triRect.top - border.top < -movementVector.cy)
+        if (LONG diff = triRect.top - border.top < 0/*-movementVector.cy*/)
         {
            // movementVector.cy += movementVector.cy / std::abs(movementVector.cy);
             movementVector.cy *= -1;
             fix.cy = diff;
         }
-        if (LONG diff = triRect.bottom - border.bottom > -movementVector.cy)
+        if (LONG diff = triRect.bottom - border.bottom > 0/*-movementVector.cy*/)
         {
            // movementVector.cy += movementVector.cy / std::abs(movementVector.cy);
             movementVector.cy *= -1;
             fix.cy = diff;
+
         }
-        if (LONG diff = triRect.left - border.left < -movementVector.cx)
+        if (LONG diff = triRect.left - border.left < 0/*-movementVector.cx*/)
         {
             //movementVector.cx += movementVector.cx / std::abs(movementVector.cx);
             movementVector.cx *= -1;
             fix.cx = diff;
+
         }
-        if (LONG diff = triRect.right - border.right > -movementVector.cx)
+        if (LONG diff = triRect.right - border.right > 0 /*-movementVector.cx*/)
         {
             //movementVector.cx += movementVector.cx / std::abs(movementVector.cx);
             movementVector.cx *= -1;
@@ -613,8 +681,8 @@ CPoint CStringToCPoint(const CString& str)
 
         while (true)
         {
-            MoveTriangleVector(doc.m_RunningPoints, frame.m_Canvas.m_Rect);
             RotateTriangleVector(doc.m_RunningPoints, frame.m_Canvas.m_Rect);
+            MoveTriangleVector(doc.m_RunningPoints, frame.m_Canvas.m_Rect);
             frame.m_Canvas.RedrawWindow();
             Sleep(50);
         }
