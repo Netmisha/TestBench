@@ -141,9 +141,10 @@ VOID CIssueView::CIssueList::OnLButtonDblClk(UINT nFlags, CPoint p)
 
     m_CurrentTitle = new CSingleIssueFrame(issueName);
 
+    if (issueName.IsEmpty())
+        m_CurrentTitle->m_IsNewTitle = TRUE;
+
     m_CurrentTitle->Create(this);   
-    WaitForSingleObject(m_CurrentTitle->GetSafeHwnd(), INFINITE);
-    UpdateWindow();
 }
 VOID CIssueView::CIssueList::UpdateWindow()
 {
@@ -164,6 +165,8 @@ VOID CIssueView::CIssueList::UpdateWindow()
         }
         ++i;
     }
+
+    InsertItem(i, CString("++"));
 
     CListCtrl::UpdateWindow();
 }
@@ -442,9 +445,12 @@ VOID CSingleIssueView::OnButtonClickSubmit()
                 CHAR stepTextBuff[buffSize]{};
                 {
                     auto cPtr = stepTextBuff;
-                    auto wPtr = line.GetBuffer() + line.Find(_T(":")) + 2;
+                    auto wPtr = line.GetBuffer();
+                    
+                    if (auto find = line.Find(_T(":")) != -1)
+                        wPtr += find + 2;
 
-                    while (*wPtr != _T('\r'))
+                    while (*wPtr != _T('\r') && *wPtr)
                     {
                         *cPtr++ = static_cast<CHAR>(*wPtr++);
                     }

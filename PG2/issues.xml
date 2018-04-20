@@ -21,12 +21,13 @@
             <step>be proud of yourselfet, or have we now</step>
         </steps_to_reproduce>
     </issue>
-    <issue name="issue 3">
+    <issue name="issue 3.1123">
         <description>some issue</description>
         <expected_result>result we expect</expected_result>
         <actual_result>result we got</actual_result>
         <steps_to_reproduce>
             <step>do smth</step>
+            <step>sdfsdf</step>
         </steps_to_reproduce>
     </issue>
     <issue name="issue 4.14">
@@ -37,6 +38,15 @@
             <step>do smth 1</step>
             <step>do smth 2</step>
             <step>do smth 3</step>
+        </steps_to_reproduce>
+    </issue>
+    <issue name="123">
+        <description>23</description>
+        <expected_result></expected_result>
+        <actual_result></actual_result>
+        <steps_to_reproduce>
+            <step>12</step>
+            <step>123</step>
         </steps_to_reproduce>
     </issue>
 </issues>
