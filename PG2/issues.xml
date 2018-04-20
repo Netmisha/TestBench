@@ -1,47 +1,42 @@
 <issues>
-  
-  <issue name="issue 1">
-    <description>some issue</description>
-    <expected_result>result we expect</expected_result>
-    <actual_result>result we got</actual_result>
-    <steps_to_reproduce>
-      1. step 1
-      2. step 2
-      3. step 3
-    </steps_to_reproduce>
-  </issue>
-
-  <issue name="issue 2">
-    <description>some issue</description>
-    <expected_result>result we expect</expected_result>
-    <actual_result>result we got</actual_result>
-    <steps_to_reproduce>
-      1. step 1
-      2. step 2
-      3. step 3
-    </steps_to_reproduce>
-  </issue>
-
-  <issue name="issue 3">
-    <description>some issue</description>
-    <expected_result>result we expect</expected_result>
-    <actual_result>result we got</actual_result>
-    <steps_to_reproduce>
-      1. step 1
-      2. step 2
-      3. step 3
-    </steps_to_reproduce>
-  </issue>
-
-  <issue name="issue 4">
-    <description>some issue</description>
-    <expected_result>result we expect</expected_result>
-    <actual_result>result we got</actual_result>
-    <steps_to_reproduce>
-      1. step 1
-      2. step 2
-      3. step 3
-    </steps_to_reproduce>
-  </issue>
- 
+    <issue name="Figure rotation bug">
+        <description>Triangle form and size gets corrupted on rotation</description>
+        <expected_result>Triangle rotates around centroid preserving original shape and size</expected_result>
+        <actual_result>Triangle becomes smaller and loses original alignment; more so on gaining spin momentum</actual_result>
+        <steps_to_reproduce>
+            <step>Create new .tri Document</step>
+            <step>Draw Triangle</step>
+            <step>Use ButtonRun to set the Triangle in motion</step>
+            <step>Wait for the Triangle to gain spin momentum on collisions</step>
+            <step>Observe Tringle form and size corruption</step>
+        </steps_to_reproduce>
+    </issue>
+    <issue name="issue 2 changed back and back again">
+        <description>some issue changed back and back again</description>
+        <expected_result>result we expect no more, or do we now</expected_result>
+        <actual_result>result we aint got yet, or have we now</actual_result>
+        <steps_to_reproduce>
+            <step>do the thing</step>
+            <step>check what happend</step>
+            <step>be proud of yourselfet, or have we now</step>
+        </steps_to_reproduce>
+    </issue>
+    <issue name="issue 3">
+        <description>some issue</description>
+        <expected_result>result we expect</expected_result>
+        <actual_result>result we got</actual_result>
+        <steps_to_reproduce>
+            <step>do smth</step>
+        </steps_to_reproduce>
+    </issue>
+    <issue name="issue 4.14">
+        <description>some issue</description>
+        <expected_result>result we expect</expected_result>
+        <actual_result>result we got</actual_result>
+        <steps_to_reproduce>
+            <step>do smth 1</step>
+            <step>do smth 2</step>
+            <step>do smth 3</step>
+        </steps_to_reproduce>
+    </issue>
 </issues>

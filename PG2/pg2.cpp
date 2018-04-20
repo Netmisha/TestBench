@@ -251,7 +251,7 @@ CPoint CStringToCPoint(const CString& str)
 
         BOOL ptExistsInDoc = FALSE;
         {
-            for (int i = 0; i < doc.m_Points.size(); ++i)
+            for (UINT i = 0; i < doc.m_Points.size(); ++i)
             {
                 CSize ptsDiff = doc.m_Points[i] - mousePt;
                 INT ptsDist = std::abs(std::hypot(ptsDiff.cx, ptsDiff.cy));
@@ -324,7 +324,7 @@ CPoint CStringToCPoint(const CString& str)
                 dc.Polygon(doc.m_Points.begin()._Ptr, doc.m_Points.size());
 
                 dc.SelectObject(m_PenBlack);
-                for (int i = 0; i < doc.m_Points.size(); ++i)
+                for (auto i = 0u; i < doc.m_Points.size(); ++i)
                 {
                     CPoint p = doc.m_Points[i];
                     p.Offset(-std::sqrt(5), -std::sqrt(5));
@@ -387,7 +387,7 @@ CPoint CStringToCPoint(const CString& str)
         {
             result = CButton::RedrawWindow();
 
-            for (int i = 0; i < 3; ++i)
+            for (auto i = 0u; i < 3; ++i)
             {
                 CString editStr;
                     m_EditPoints[i].GetWindowText(editStr);
@@ -534,7 +534,7 @@ CPoint CStringToCPoint(const CString& str)
         auto pi = 3.141592653589793238462643383279502884L;
         static auto fi = (pi / 180) * 3;
 
-        for (int i = 0; i < vec.size(); ++i)
+        for (auto i = 0u; i < vec.size(); ++i)
         {
             DPoint p = vec[i];
             auto r = std::hypot(c.x - p.x, c.y - p.y);
@@ -597,7 +597,7 @@ CPoint CStringToCPoint(const CString& str)
             fix.cx = diff;
         }
 
-        for (int i = 0; i < vec.size(); ++i)
+        for (auto i = 0u; i < vec.size(); ++i)
         {
             vec[i].x += movementVector.cx + fix.cx;
             vec[i].y += movementVector.cy + fix.cy;
@@ -649,7 +649,7 @@ CPoint CStringToCPoint(const CString& str)
 
             if (!std::empty(doc.m_Points))
             {
-                for (int i = 0; i < doc.m_Points.size(); ++i)
+                for (auto i = 0u; i < doc.m_Points.size(); ++i)
                 {
                     doc.m_RunningPoints.push_back(DPoint{ doc.m_Points[i] });
                 }
@@ -852,7 +852,7 @@ void CMainView::OnMouseHover(UINT nFlags, CPoint mousePt)
             // offsetting mouse pt in relation to canvas
             mousePt += clientRect.TopLeft() - frame.m_Canvas.m_Rect.TopLeft();
 
-            for (int i = 0; i < doc.m_Points.size(); ++i)
+            for (auto i = 0u; i < doc.m_Points.size(); ++i)
             {
                 CSize ptsDiff = doc.m_Points[i] - mousePt;
                 INT ptsDist = std::hypot(ptsDiff.cx, ptsDiff.cy);
