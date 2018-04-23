@@ -629,16 +629,33 @@ CPoint CStringToCPoint(const CString& str)
         if (pts.empty())
             return;
 
-        static DPoint ms { 9,9 };
-        static DOUBLE fi = 6;
+        static DPoint ms { 15,15 };
+        static DOUBLE fi = 10;
 
         BOOL onRotatingCollision = FALSE;
         {
-            auto ptsCopy = pts;
-            SimpleRotation(ptsCopy, Centroid(ptsCopy), fi);
-            
-            auto fi_fixed = fi;
-            //if collision - fix
+            DOUBLE fi_fixed;
+
+            int i = 1;
+            for (; i < 10; ++i)
+            {
+                auto ptsCopy = pts;
+                SimpleRotation(ptsCopy, Centroid(ptsCopy), fi);
+                BOOL alright = true;
+                for (auto& p : ptsCopy)
+                {
+                    if (!border.PtInRect(p))
+                    {
+                        alright = false;
+                        break;
+                    }
+                }
+
+                fi_fixed = fi / i;
+
+                if (alright)
+                    break;
+            }
 
             SimpleRotation(pts, Centroid(pts), fi_fixed);
         }
