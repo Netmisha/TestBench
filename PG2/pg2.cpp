@@ -348,23 +348,23 @@ CPoint CStringToCPoint(const CString& str)
                     });
                 }
                 dc.Polygon(cp.begin()._Ptr, doc.m_RunningPoints.size());
-                dc.Rectangle(CRect
-                {
-                    CPoint
-                {
-                    std::min_element(doc.m_RunningPoints.begin(), doc.m_RunningPoints.end(), 
-                    [](CPoint& p1, CPoint& p2) {return p1.x < p2.x;})->operator CPoint().x,
-                    std::min_element(doc.m_RunningPoints.begin(), doc.m_RunningPoints.end(), 
-                    [](CPoint& p1, CPoint& p2) {return p1.y < p2.y;})->operator CPoint().y
-                },
-                    CPoint
-                {
-                    std::max_element(doc.m_RunningPoints.begin(), doc.m_RunningPoints.end(), 
-                    [](CPoint& p1, CPoint& p2) {return p1.x < p2.x;})->operator CPoint().x,
-                    std::max_element(doc.m_RunningPoints.begin(), doc.m_RunningPoints.end(), 
-                    [](CPoint& p1, CPoint& p2) {return p1.y < p2.y;})->operator CPoint().y
-                }
-                });
+                //dc.Rectangle(CRect
+                //{
+                //    CPoint
+                //{
+                //    std::min_element(doc.m_RunningPoints.begin(), doc.m_RunningPoints.end(), 
+                //    [](CPoint& p1, CPoint& p2) {return p1.x < p2.x;})->operator CPoint().x,
+                //    std::min_element(doc.m_RunningPoints.begin(), doc.m_RunningPoints.end(), 
+                //    [](CPoint& p1, CPoint& p2) {return p1.y < p2.y;})->operator CPoint().y
+                //},
+                //    CPoint
+                //{
+                //    std::max_element(doc.m_RunningPoints.begin(), doc.m_RunningPoints.end(), 
+                //    [](CPoint& p1, CPoint& p2) {return p1.x < p2.x;})->operator CPoint().x,
+                //    std::max_element(doc.m_RunningPoints.begin(), doc.m_RunningPoints.end(), 
+                //    [](CPoint& p1, CPoint& p2) {return p1.y < p2.y;})->operator CPoint().y
+                //}
+                //});
             }
 
         }
@@ -528,45 +528,190 @@ CPoint CStringToCPoint(const CString& str)
         frame.m_Canvas.RedrawWindow();
     }
 
-    void MoveAndRotateVector(std::vector<DPoint>& vec, CRect border)
+    
+    DPoint Centroid(std::vector<DPoint>& pts)
     {
-        if (vec.empty())
+        return 
+            std::accumulate(
+            pts.begin(),pts.end(),
+            DPoint({ 0,0 }),
+            [&pts](auto& acc, auto& val)
+        {
+            acc.x += val.x / pts.size();
+            acc.y += val.y / pts.size();
+            return acc;
+        });
+    }
+    void SimpleRotation(std::vector<DPoint>& pts, DPoint o, DOUBLE alfa)
+    {
+        static const auto pi = 3.141592653589793238462643383279502884L;
+        auto fi = (pi / 180) * alfa;
+        for (auto& d : pts)
+        {
+            auto p = d;
+
+            p.x = std::cos(fi) * (d.x - o.x) - std::sin(fi) * (d.y - o.y) + o.x;
+            p.y = std::sin(fi) * (d.x - o.x) + std::cos(fi) * (d.y - o.y) + o.y;
+
+            d = p;
+        }
+    }
+    void SimleMovement(std::vector<DPoint>& pts, DPoint ms)
+    {
+        for (auto& d : pts)
+        {
+            d.x += ms.x;
+            d.y += ms.y;
+        }
+    }
+    BOOL cmpX(DPoint& p1, DPoint& p2)
+    {
+        return p1.x < p2.x;
+    }
+    BOOL cmpY(DPoint& p1, DPoint& p2)
+    {
+        return p1.y < p2.y;
+    }
+    std::vector<DPoint> DRect(std::vector<DPoint>& pts)
+    {
+        return  std::vector<DPoint>{
+            DPoint
+        {
+            std::min_element(pts.begin(), pts.end(), cmpX)->x,
+            std::min_element(pts.begin(), pts.end(), cmpY)->y
+        },
+            DPoint
+        {
+            std::max_element(pts.begin(), pts.end(), cmpX)->x,
+            std::min_element(pts.begin(), pts.end(), cmpY)->y
+
+        },
+            DPoint
+        {
+            std::min_element(pts.begin(), pts.end(), cmpX)->x,
+            std::max_element(pts.begin(), pts.end(), cmpY)->y
+        },
+            DPoint
+        {
+            std::max_element(pts.begin(), pts.end(), cmpX)->x,
+            std::max_element(pts.begin(), pts.end(), cmpY)->y
+        }
+        };
+    }
+    DPoint OutOfBoundCorrection(std::vector<DPoint>& pts, CRect bound)
+    {
+        DPoint fix{ 0,0 };
+
+        auto dRect = DRect(pts);
+
+        auto diffXL = dRect[0].x - bound.left;
+        if ( diffXL < 0)
+            fix.x = diffXL;
+
+        auto diffYT = dRect[0].y - bound.top;
+        if (diffYT < 0)
+            fix.y = diffYT;
+        
+        auto diffXR = dRect[1].x - bound.right;
+
+        if (diffXR > 0)
+            fix.x = diffXR;
+
+        auto diffYB = dRect[2].y - bound.bottom;
+        if (diffYB > 0)
+            fix.y = diffYB;
+
+        return fix;
+
+    }
+    void MoveAndRotateVector(std::vector<DPoint>& pts, CRect border)
+    {
+        if (pts.empty())
             return;
 
-        static CSize moveSpeed{ 5,5 };
-        auto pi = 3.141592653589793238462643383279502884L;
-        static DOUBLE fi = (pi / 180) * 3;
+        static DPoint ms { 9,9 };
+        static DOUBLE fi = 6;
 
-        auto cmpX = [](DPoint& p1, DPoint& p2) {return p1.x < p2.x;};
-        auto cmpY = [](DPoint& p1, DPoint& p2) {return p1.y < p2.y;};
-
-        std::vector<DPoint> rect = 
+        BOOL onRotatingCollision = FALSE;
         {
-            DPoint
-            {
-                std::min_element(vec.begin(), vec.end(), cmpX)->x,
-                std::min_element(vec.begin(), vec.end(), cmpY)->y
-            },
-            DPoint
-            {
-                std::max_element(vec.begin(), vec.end(), cmpX)->x,
-                std::min_element(vec.begin(), vec.end(), cmpY)->y
+            auto ptsCopy = pts;
+            SimpleRotation(ptsCopy, Centroid(ptsCopy), fi);
+            
+            auto fi_fixed = fi;
+            //if collision - fix
 
-            },
-            DPoint
+            SimpleRotation(pts, Centroid(pts), fi_fixed);
+        }
+
+        BOOL onStraightMoveCollision = FALSE;
+        {
+            DPoint ms_fixed = ms;
+
+            auto dRect = DRect(pts);
+            auto c = Centroid(pts);
+            if (ms.x > 0)
             {
-                std::min_element(vec.begin(), vec.end(), cmpX)->x,
-                std::max_element(vec.begin(), vec.end(), cmpY)->y
-            },
-            DPoint
-            {
-                std::max_element(vec.begin(), vec.end(), cmpX)->x,
-                std::max_element(vec.begin(), vec.end(), cmpY)->y
+                auto dist = std::abs(border.right - dRect[1].x);
+                if (dist < ms.x)
+                {
+                    ms_fixed.x = dist -1;
+                    ms.x *= -1;
+
+                    DPoint pc = *std::max_element(pts.begin(), pts.end(), cmpX);
+                    if ((pc.y < c.y) == (fi > 0))
+                    {
+                        fi *= -1;
+                    }
+                }
             }
-        };
-    
+            else
+            {
+                auto dist = std::abs(dRect[0].x - border.left);
+                if (dist < std::abs(ms.x))
+                {
+                    ms_fixed.x = -dist + 1;
+                    ms.x *= -1;
 
+                    DPoint pc = *std::min_element(pts.begin(), pts.end(), cmpX);
+                    if ((pc.y < c.y) == (fi < 0))
+                    {
+                        fi *= -1;
+                    }
+                }
+            }
 
+            if (ms.y > 0)
+            {
+                auto dist = std::abs(border.bottom - dRect[2].y);
+                if (dist < ms.y)
+                {
+                    ms_fixed.y = dist - 1;
+                    ms.y *= -1;
+
+                    DPoint pc = *std::max_element(pts.begin(), pts.end(), cmpY);
+                    if ((pc.x < c.x) == (fi < 0))
+                    {
+                        fi *= -1;
+                    }
+                }
+            }
+            else
+            {
+                auto dist = std::abs(border.top - dRect[0].y);
+                if (dist < std::abs(ms.y))
+                {
+                    ms_fixed.y = -dist + 1;
+                    ms.y *= -1;
+
+                    DPoint pc = *std::min_element(pts.begin(), pts.end(), cmpY);
+                    if ((pc.x < c.x) == (fi > 0))
+                    {
+                        fi *= -1;
+                    }
+                }
+            }
+            SimleMovement(pts, ms_fixed);
+        }
 
     }
 
@@ -578,41 +723,20 @@ CPoint CStringToCPoint(const CString& str)
 
         border.OffsetRect(-10, -10);
 
-        DPoint c({ 0,0 });
-        {
-            c = std::accumulate(
-                vec.begin(), 
-                vec.end(), 
-                DPoint({ 0,0 }),
-                [&vec](DPoint& acc, DPoint& val) 
-            {
-                acc.x += val.x / vec.size();
-                acc.y += val.y / vec.size();
-                return acc;
-            });
-        }
-        auto pi = 3.141592653589793238462643383279502884L;
-        static auto fi = (pi / 180) * 3;
+        DPoint c = Centroid(vec);
 
-        for (auto i = 0u; i < vec.size(); ++i)
-        {
-            DPoint p = vec[i];
-            auto r = std::hypot(c.x - p.x, c.y - p.y);
+        static auto fi = 2;
 
-            p.x = std::cos(fi) * (vec[i].x - c.x) - std::sin(fi)*(vec[i].y - c.y) +c.x;
-            p.y = std::sin(fi) * (vec[i].x - c.x) + std::cos(fi)*(vec[i].y - c.y) +c.y;
+        SimpleRotation(vec, c, fi);
 
-            vec[i] = p;
-        }
-
-        for (int i = 0; i < 3; ++i)
-        {
-            if (!border.PtInRect(vec[i])) 
-            {
-                fi *= 1;
-                //fi += .1;
-            }
-        }
+        //for (int i = 0; i < 3; ++i)
+        //{
+        //    if (!border.PtInRect(vec[i])) 
+        //    {
+        //        fi *= 1;
+        //        //fi += .1;
+        //    }
+        //}
     }
     void MoveTriangleVector(std::vector<DPoint>& vec, CRect border)
     {
@@ -665,11 +789,14 @@ CPoint CStringToCPoint(const CString& str)
             fix.cx = diff;
         }
 
-        for (auto i = 0u; i < vec.size(); ++i)
-        {
-            vec[i].x += movementVector.cx + fix.cx;
-            vec[i].y += movementVector.cy + fix.cy;
-        }
+        CPoint ms(movementVector.cx + fix.cx, movementVector.cy + fix.cy);
+        SimleMovement(vec, ms);
+
+        //for (auto i = 0u; i < vec.size(); ++i)
+        //{
+        //    vec[i].x += movementVector.cx + fix.cx;
+        //    vec[i].y += movementVector.cy + fix.cy;
+        //}
 
     }
 
@@ -681,8 +808,9 @@ CPoint CStringToCPoint(const CString& str)
 
         while (true)
         {
-            RotateTriangleVector(doc.m_RunningPoints, frame.m_Canvas.m_Rect);
-            MoveTriangleVector(doc.m_RunningPoints, frame.m_Canvas.m_Rect);
+            auto border = frame.m_Canvas.m_Rect;
+            border.OffsetRect(-11, -11);
+            MoveAndRotateVector(doc.m_RunningPoints, border);
             frame.m_Canvas.RedrawWindow();
             Sleep(50);
         }
