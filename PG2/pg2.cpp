@@ -368,6 +368,8 @@ CPoint CStringToCPoint(const CString& str)
             }
 
         }
+
+        dc.ReleaseOutputDC();
         return result;
     }
 #endif // !C_CANVAS
